@@ -49,7 +49,7 @@ app.post('/shopifai',urlencodedParser,async function(req,res) {
     logprobs: null,
     stop: '/n'
    }
-   let fetch = await import('node-fetch')
+   const fetch = require('node-fetch');
    console.log(fetch);
    const url = `https://api.openai.com/v1/completions`;
       
@@ -102,7 +102,8 @@ app.post('/ai',urlencodedParser,async function(req,res) {
   res.json(datum);
  
    const url = `https://api.openai.com/v1/completions`;
-   let fetch = await import('node-fetch')
+   const fetch = require('node-fetch');
+
       const result = await (await fetch(url, {
         method: 'POST',
         headers: {
