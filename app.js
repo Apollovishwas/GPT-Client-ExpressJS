@@ -25,6 +25,12 @@ app.post('/shopifai',urlencodedParser,async function(req,res) {
  if(stat ==1) {
   stat = 0;
     const query = encodeURIComponent(req.body.text);
+    if(query == '' || query == ' ' || query == undefined) {
+      const slackResult = await Axios.post(process.env.WEBHOOK, {
+        text : 'Invalid query',
+    });
+    return;
+    }
     let datum = {
         respose_type:'in_channel',
         text : JSON.stringify(
@@ -88,6 +94,12 @@ app.post('/ai',urlencodedParser,async function(req,res) {
   if(aiStat == 1) {
     aiStat = 0;
   const query = encodeURIComponent(req.body.text);
+  if(query == '' || query == ' ' || query == undefined) {
+    const slackResult = await Axios.post(process.env.WEBHOOK, {
+      text : 'Invalid query',
+  });
+  return;
+  }
   const payloads = {
     model: 'text-davinci-003',
     prompt: query,
