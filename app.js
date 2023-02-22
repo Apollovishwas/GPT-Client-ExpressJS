@@ -5,7 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var bodyParser = require('body-parser')
 var indexRouter = require('./routes/index');
-var gptRouter = require('./routes/gpt');
+
 var usersRouter = require('./routes/users');
 const Axios = require('axios');
 var app = express();
@@ -179,7 +179,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static("public"))
 
 app.use('/', indexRouter);
-app.use('/gpt', gptRouter);
+
 app.use('/users', usersRouter);
 const port = process.env.PORT || 3000;
 
