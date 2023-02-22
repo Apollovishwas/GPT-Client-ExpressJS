@@ -21,7 +21,9 @@ app.get('/', (req, res) => {
 // create application/x-www-form-urlencoded parser
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
 app.post('/shopifai',urlencodedParser,async function(req,res) {
- 
+  let stat = 1;
+ if(stat ==1) {
+  stat = 0;
     const query = encodeURIComponent(req.body.text);
     let datum = {
         respose_type:'in_channel',
@@ -73,13 +75,18 @@ app.post('/shopifai',urlencodedParser,async function(req,res) {
         const slackResult = await Axios.post(process.env.WEBHOOK, {
             text : reply,
         })
-     }
 
+        stat = 1
+     }
+    }
 
 })
 
 
 app.post('/ai',urlencodedParser,async function(req,res) {
+  let aiStat = 1;
+  if(aiStat == 1) {
+    aiStat = 0;
   const query = encodeURIComponent(req.body.text);
   const payloads = {
     model: 'text-davinci-003',
@@ -129,8 +136,9 @@ app.post('/ai',urlencodedParser,async function(req,res) {
         const slackResult = await Axios.post(process.env.WEBHOOK, {
             text : reply,
         })
+        aiStat = 1;
      }
-
+    }
 })
 
 
