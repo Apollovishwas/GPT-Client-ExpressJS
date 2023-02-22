@@ -1,3 +1,6 @@
+
+
+
 var express = require('express');
 require('dotenv').config();
 var path = require('path');
@@ -5,6 +8,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var bodyParser = require('body-parser')
 var indexRouter = require('./routes/index');
+
 
 var usersRouter = require('./routes/users');
 const Axios = require('axios');
@@ -45,6 +49,8 @@ app.post('/shopifai',urlencodedParser,async function(req,res) {
     logprobs: null,
     stop: '/n'
    }
+   let fetch = await import('node-fetch')
+
    const url = `https://api.openai.com/v1/completions`;
       
       const result = await (await fetch(url, {
