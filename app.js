@@ -64,7 +64,7 @@ app.post('/shopifai',urlencodedParser,async function(req,res) {
      else {
         var reply = result['choices'][0]['text'];
         
-        const slackResult = await Axios.post('https://hooks.slack.com/services/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', {
+        const slackResult = await Axios.post(process.env.WEBHOOK, {
             text : reply,
         })
      }
@@ -108,7 +108,7 @@ app.post('/ai',urlencodedParser,async function(req,res) {
       if (result.error) {
         console.log(result)
         res.json(result.error)
-        const slackResult = await Axios.post('https://hooks.slack.com/services/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', {
+        const slackResult = await Axios.post(process.env.WEBHOOK, {
           text : "Error. Try again",
       })
       }
@@ -118,7 +118,7 @@ app.post('/ai',urlencodedParser,async function(req,res) {
         var reply = result['choices'][0]['text'];
         console.log(result)
         
-        const slackResult = await Axios.post('https://hooks.slack.com/services/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', {
+        const slackResult = await Axios.post(process.env.WEBHOOK, {
             text : reply,
         })
      }
