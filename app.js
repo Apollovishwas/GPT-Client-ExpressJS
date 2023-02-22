@@ -26,7 +26,7 @@ app.post('/shopifai',urlencodedParser,async function(req,res) {
         )
       };
       res.json(datum)
-    const request = await Axios.post(`https://polymathecome.herokuapp.com/?query=${query}`)
+    const request = await Axios.post(`https://lionfish-app-n87c6.ondigitalocean.app/?query=${query}`)
     
     var data = request.data
     
@@ -64,7 +64,7 @@ app.post('/shopifai',urlencodedParser,async function(req,res) {
      else {
         var reply = result['choices'][0]['text'];
         
-        const slackResult = await Axios.post('https://hooks.slack.com/services/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', {
+        const slackResult = await Axios.post('https://hooks.slack.com/services/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', {
             text : reply,
         })
      }
@@ -108,9 +108,9 @@ app.post('/ai',urlencodedParser,async function(req,res) {
       if (result.error) {
         console.log(result)
         res.json(result.error)
-      //   const slackResult = await Axios.post('https://hooks.slack.com/services/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', {
-      //     text : "Error. Try again",
-      // })
+        const slackResult = await Axios.post('https://hooks.slack.com/services/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', {
+          text : "Error. Try again",
+      })
       }
        
      else {
@@ -118,7 +118,7 @@ app.post('/ai',urlencodedParser,async function(req,res) {
         var reply = result['choices'][0]['text'];
         console.log(result)
         
-        const slackResult = await Axios.post('https://hooks.slack.com/services/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', {
+        const slackResult = await Axios.post('https://hooks.slack.com/services/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', {
             text : reply,
         })
      }
