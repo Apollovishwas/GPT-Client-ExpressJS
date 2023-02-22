@@ -97,7 +97,7 @@ app.post('/ai',urlencodedParser,async function(req,res) {
  
    const url = `https://api.openai.com/v1/completions`;
       
-      const result = await (await fetch(url, {
+      const result =  (await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
