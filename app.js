@@ -50,7 +50,7 @@ app.post('/shopifai',urlencodedParser,async function(req,res) {
     stop: '/n'
    }
    let fetch = await import('node-fetch')
-
+   console.log(fetch);
    const url = `https://api.openai.com/v1/completions`;
       
       const result = await (await fetch(url, {
