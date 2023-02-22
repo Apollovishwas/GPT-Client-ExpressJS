@@ -102,8 +102,8 @@ app.post('/ai',urlencodedParser,async function(req,res) {
   res.json(datum);
  
    const url = `https://api.openai.com/v1/completions`;
-   let fetch = await import('node-fetch')
-      const result =  (await fetch(url, {
+
+      const result = await (await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -121,8 +121,9 @@ app.post('/ai',urlencodedParser,async function(req,res) {
        
      else {
       console.log("no errir")
+      console.log(result['choices'])
         var reply = result['choices'][0]['text'];
-        console.log(result)
+        
         
         const slackResult = await Axios.post(process.env.WEBHOOK, {
             text : reply,
