@@ -102,7 +102,7 @@ app.post('/ai',urlencodedParser,async function(req,res) {
   res.json(datum);
  
    const url = `https://api.openai.com/v1/completions`;
-      
+   let fetch = await import('node-fetch')
       const result =  (await fetch(url, {
         method: 'POST',
         headers: {
