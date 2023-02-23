@@ -115,7 +115,7 @@ try {
       }
       else {
         var reply = result['choices'][0]['text'];
-        var substr = "I'm sorry, this Polymath instance does not contain the answer to your question. You may want to look for this information elsewhere";
+        var substr = "this Polymath instance does not contain the answer to your question";
         if(reply.includes(substr)) {
           console.log('yep');
           const slackResult = await Axios.post(process.env.WEBHOOK, {
