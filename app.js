@@ -48,6 +48,7 @@ app.post('/shopifai',urlencodedParser,async function(req,res) {
     //     console.log(response.status);
        
     // })
+    const fetch = require('node-fetch');
     try {
       const response = await fetch('https://lionfish-app-n87c6.ondigitalocean.app');
       console.log('no error', response.status)
