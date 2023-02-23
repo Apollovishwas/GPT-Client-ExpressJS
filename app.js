@@ -49,7 +49,7 @@ app.post('/shopifai',urlencodedParser,async function(req,res) {
        
     // })
     try {
-      const response = await fetch('https://lionfish-app-n87c6.ondigitalocean.ap');
+      const response = await fetch('https://lionfish-app-n87c6.ondigitalocean.app');
       console.log('no error', response.status)
       res.json(datum)
       const request = await Axios.post(`https://lionfish-app-n87c6.ondigitalocean.app/?query=${query}`)
