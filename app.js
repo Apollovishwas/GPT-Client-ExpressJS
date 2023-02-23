@@ -10,6 +10,7 @@ var bodyParser = require('body-parser')
 var indexRouter = require('./routes/index');
 
 
+
 var usersRouter = require('./routes/users');
 const Axios = require('axios');
 var app = express();
@@ -18,6 +19,9 @@ app.get('/', (req, res) => {
   console.log( );
     res.send('Hello World!');
   });
+
+
+
 // create application/x-www-form-urlencoded parser
 var urlencodedParser = bodyParser.urlencoded({ extended: false })
 app.post('/shopifai',urlencodedParser,async function(req,res) {
@@ -26,24 +30,52 @@ app.post('/shopifai',urlencodedParser,async function(req,res) {
   stat = 0;
     const query = encodeURIComponent(req.body.text);
     if(query == '' || query == ' ' || query == undefined) {
-      const slackResult = await Axios.post(process.env.WEBHOOK, {
-        text : 'Invalid query',
-    });
+      res.json('Invalid Query')
     return;
     }
+    else {
+    let defaultReply = ['Hmmm..Let me Search', 'Give me a moment to search', 'Good Question. Let me search answer for that', 'Searching my records']
     let datum = {
         respose_type:'in_channel',
         text : JSON.stringify(
-        "Hmm..Let me Search."
+        defaultReply[randomIntFromInterval(0,3)]
         )
       };
+      
+    //   const fetch = require('node-fetch');
+    //  await fetch(`https://lionfish-app-n87c6.ondigitalocean.ap`)
+    //   .then(function (response) {
+    //     console.log(response.status);
+       
+    // })
+    try {
+      const response = await fetch('https://lionfish-app-n87c6.ondigitalocean.ap');
+      console.log('no error', response.status)
       res.json(datum)
-    const request = await Axios.post(`https://lionfish-app-n87c6.ondigitalocean.app/?query=${query}`)
+      const request = await Axios.post(`https://lionfish-app-n87c6.ondigitalocean.app/?query=${query}`)
     
     var data = request.data
     
   //sending response to slack 
+//getting url part
+var firstDesc = '';
+var secondDesc = '';
+if(data.bits[0].info.description != undefined){
+ firstDesc = (data.bits[0].info.description).replace(/^[\s\n]+|[\s\n]+$/g,'');
+secondDesc = (data.bits[1].info.description).replace(/^[\s\n]+|[\s\n]+$/g,'');
+}
+else {
+firstDesc = 'View Page';
+secondDesc = 'View Page'
+}
 
+
+
+    
+var firstLink = data.bits[0].info.url
+var secondLink = (data.bits[1].info.url);
+firstLink = firstLink.replace(/^[\s\n]+|[\s\n]+$/g,'');
+secondLink = (secondLink.replace(/^[\s\n]+|[\s\n]+$/g,''));
     const context = data.bits.map(chunk => chunk.text).join('\n');
     var resContext= `Answer the question as truthfully as possible using the provided context, and if don't have the answer, say in a friendly tone that this Polymath instance does not contain the answer and suggest looking for this information elsewhere.\n\nContext:\n${context} \n\nQuestion:\n${query}\n\nAnswer:`;
    const payload = {
@@ -57,8 +89,7 @@ app.post('/shopifai',urlencodedParser,async function(req,res) {
     logprobs: null,
     stop: '/n'
    }
-   const fetch = require('node-fetch');
-   console.log(fetch);
+   
    const url = `https://api.openai.com/v1/completions`;
       
       const result = await (await fetch(url, {
@@ -69,23 +100,90 @@ app.post('/shopifai',urlencodedParser,async function(req,res) {
         },
         body: JSON.stringify(payload)
       })).json();
+
+
       if (result.error) {
         console.log(
             "Error occured. Try again!"
         )
       }
-       
-     else {
+      else {
         var reply = result['choices'][0]['text'];
+        //if two resources are same, 
+        if (firstLink==secondLink) {
         
-        const slackResult = await Axios.post(process.env.WEBHOOK, {
-            text : reply,
+
+          const slackResult = await Axios.post(process.env.WEBHOOK, {
+            'blocks':[
+              {
+                "type": "section",
+			          "text": {
+				        "type":"plain_text",
+				        "text": reply + '. This resource might help you! ',
+				"emoji": true
+			}
+              }, 
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "<"+firstLink+"|"+firstDesc+" >"
+                }
+              }
+            ]
         })
+
+        //else
+        }
+        else {
+          const slackResult = await Axios.post(process.env.WEBHOOK, {
+            'blocks':[
+              {
+                "type": "section",
+			          "text": {
+				        "type":"plain_text",
+				        "text": reply + '. This resource might help you! ',
+				"emoji": true
+			}
+              }, 
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "<"+firstLink+"|"+firstDesc+" >"
+                }
+              }, 
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "<"+secondLink+"|"+secondDesc+" >"
+                }
+              }
+            ]
+        })
+
+        }
+        
+      
 
         stat = 1
      }
+
+
+    } catch (error) {
+      // TypeError: Failed to fetch
+      res.json('Polymath Server Offline')
+      console.log('There was an error', error);
     }
 
+  
+
+    
+       
+    
+    }
+  }
 })
 
 
@@ -95,11 +193,10 @@ app.post('/ai',urlencodedParser,async function(req,res) {
     aiStat = 0;
   const query = encodeURIComponent(req.body.text);
   if(query == '' || query == ' ' || query == undefined) {
-    const slackResult = await Axios.post(process.env.WEBHOOK, {
-      text : 'Invalid query',
-  });
+    res.json('Invalid query');
   return;
   }
+  else {
   const payloads = {
     model: 'text-davinci-003',
     prompt: query,
@@ -111,11 +208,13 @@ app.post('/ai',urlencodedParser,async function(req,res) {
     logprobs: null,
     stop: '#'
    }
+   let defaultReply = ['Hmmm..Let me Search', 'Give me a moment to search', 'Good Question. Let me search answer for that', 'Searching my records']
+
 
    let datum = {
     respose_type:'in_channel',
     text : JSON.stringify(
-    "Let me process that" 
+    defaultReply[randomIntFromInterval(0,3)] 
     )
   };
   res.json(datum);
@@ -151,6 +250,7 @@ app.post('/ai',urlencodedParser,async function(req,res) {
         aiStat = 1;
      }
     }
+  }
 })
 
 
@@ -215,3 +315,9 @@ app.listen(port, () => {
     console.log(`App available at http://localhost:${port}`);
   });
 module.exports = app;
+
+
+//Random Function
+function randomIntFromInterval(min, max) { // min and max included 
+  return Math.floor(Math.random() * (max - min + 1) + min)
+}
