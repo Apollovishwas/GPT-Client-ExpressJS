@@ -17,7 +17,7 @@ var app = express();
 var jsonParser = bodyParser.json()
 app.get('/', (req, res) => {
   console.log( );
-    res.send('Hello World!');
+    res.send('Hello Slackbot!');
   });
 
 
