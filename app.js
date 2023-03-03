@@ -80,22 +80,27 @@ secondLink = (secondLink.replace(/^[\s\n]+|[\s\n]+$/g,''));
     const context = data.bits.map(chunk => chunk.text).join('\n');
     //engineering prompt.
     var resContext= `Answer the question as truthfully as possible using the provided context, and if don't have the answer, say in a friendly tone that this Polymath instance does not contain the answer and suggest looking for this information elsewhere.\n\nContext:\n${context} \n\nQuestion:\n${query}\n\nAnswer:`;
-   const payload = {
-    model: 'text-davinci-003',
-    prompt: resContext,
+   
+    const payload = {
+    model: 'gpt-3.5-turbo',
+    messages:[
+      {"role": "system", "content": "You are a helpful assistant."},
+      {"role": "user", "content": resContext}
+  ],
     max_tokens: 1024,
     temperature: 0,
     top_p: 1,
     n: 1,
     stream: false,
-    logprobs: null,
+    
     stop: '/n'
    }
+  // console.log(payload);
 
 try {
 
    //requesting openai for response.
-   const url = `https://api.openai.com/v1/completions`;
+   const url = `https://api.openai.com/v1/chat/completions`;
       res.json(datum)
       const result = await (await fetch(url, {
         method: 'POST',
@@ -110,12 +115,13 @@ try {
 
       if (result.error) {
         console.log(
-            "Error occured. Try again!"
+            result.error
         )
       }
       else {
-        var reply = result['choices'][0]['text'];
+        var reply = result['choices'][0]['message']['content'];
         var substr = "this Polymath instance does not contain the answer to your question";
+        console.log(result['choices'][0]['message']['content']);
         if(reply.includes(substr)) {
           console.log('yep');
           const slackResult = await Axios.post(process.env.WEBHOOK, {
@@ -242,17 +248,20 @@ app.post('/ai',urlencodedParser,async function(req,res) {
   return;
   }
   else {
-  const payloads = {
-    model: 'text-davinci-003',
-    prompt: query,
-    max_tokens: 1024,
-    temperature: 0,
-    top_p: 1,
-    n: 1,
-    stream: false,
-    logprobs: null,
-    stop: '#'
-   }
+    const payloads = {
+      model: 'gpt-3.5-turbo',
+      messages:[
+        {"role": "system", "content": "You are a helpful assistant."},
+        {"role": "user", "content": query}
+    ],
+      max_tokens: 1024,
+      temperature: 0,
+      top_p: 1,
+      n: 1,
+      stream: false,
+      
+      stop: '/n'
+     }
    let defaultReply = ['Hmmm..Let me Search', 'Give me a moment to search', 'Good Question. Let me search answer for that', 'Searching my records']
 
 
@@ -264,7 +273,7 @@ app.post('/ai',urlencodedParser,async function(req,res) {
   };
  try {
  //requesting openAI for response
-   const url = `https://api.openai.com/v1/completions`;
+   const url = `https://api.openai.com/v1/chat/completions`;
    const fetch = require('node-fetch');
    res.json(datum);
       const result = await (await fetch(url, {
@@ -277,7 +286,7 @@ app.post('/ai',urlencodedParser,async function(req,res) {
         body: JSON.stringify(payloads)
       })).json();
       if (result.error) {
-        
+        console.log('its not working')
         res.json(result.error)
         const slackResult = await Axios.post(process.env.WEBHOOK, {
           text : "Error. Try again",
@@ -287,7 +296,7 @@ app.post('/ai',urlencodedParser,async function(req,res) {
      else {
       console.log("no errir")
       console.log(result['choices'])
-        var reply = result['choices'][0]['text'];
+        var reply = result['choices'][0]['message']['content'];;
         
         
         const slackResult = await Axios.post(process.env.WEBHOOK, {
@@ -297,6 +306,7 @@ app.post('/ai',urlencodedParser,async function(req,res) {
      }
     }
     catch(error) {
+      console.log(error)
       const slackResult = await Axios.post(process.env.WEBHOOK, {
         'blocks':[
           {
@@ -351,118 +361,3 @@ const Timeout = (time) => {
 	setTimeout(() => controller.abort(), time * 1000);
 	return controller;
 };
-
-
-app.post('/siri', async function(req, res) {
-  let stat = 1;
-  //making sure I'ts not done executing multiple queries at the same time
- if(stat ==1) {
-  stat = 0;
-    const query = encodeURIComponent(req.body.text);
-    //handling Empty query 
-    if(query == '' || query == ' ' || query == undefined) {
-      res.json('Invalid Query')
-    return;
-    }
-    else {
-      //different response to make not to feel like a bot?
-    let defaultReply = ['Hmmm..Let me Search', 'Give me a moment to search', 'Good Question. Let me search answer for that', 'Searching my records']
-    let datum = {
-        respose_type:'in_channel',
-        text : JSON.stringify(
-        defaultReply[randomIntFromInterval(0,3)]
-        )
-      };
-      
- //cheking if the server is online
-    const fetch = require('node-fetch');
-    try {
-      const response = await fetch('https://lionfish-app-n87c6.ondigitalocean.app');
-      console.log('no error', response.status)
-      
-      const request = await Axios.post(`https://lionfish-app-n87c6.ondigitalocean.app/?query=${query}`)
-    
-    var data = request.data
-    
-  //sending response to slack 
-//getting url part and description part
-var firstDesc = '';
-var secondDesc = '';
-if(data.bits[0].info.description != undefined){
- firstDesc = (data.bits[0].info.description).replace(/^[\s\n]+|[\s\n]+$/g,'');
-secondDesc = (data.bits[1].info.description).replace(/^[\s\n]+|[\s\n]+$/g,'');
-}
-else {
-firstDesc = 'View Page';
-secondDesc = 'View Page'
-}
-
-
-
-    
-var firstLink = data.bits[0].info.url
-var secondLink = (data.bits[1].info.url);
-firstLink = firstLink.replace(/^[\s\n]+|[\s\n]+$/g,'');
-secondLink = (secondLink.replace(/^[\s\n]+|[\s\n]+$/g,''));
-    const context = data.bits.map(chunk => chunk.text).join('\n');
-    //engineering prompt.
-    var resContext= `Answer the question as truthfully as possible using the provided context, and if don't have the answer, say in a friendly tone that this Polymath instance does not contain the answer and suggest looking for this information elsewhere.\n\nContext:\n${context} \n\nQuestion:\n${query}\n\nAnswer:`;
-   const payload = {
-    model: 'text-davinci-003',
-    prompt: resContext,
-    max_tokens: 1024,
-    temperature: 0,
-    top_p: 1,
-    n: 1,
-    stream: false,
-    logprobs: null,
-    stop: '/n'
-   }
-
-try {
-
-   //requesting openai for response.
-   const url = `https://api.openai.com/v1/completions`;
-    //  res.json(datum)
-      const result = await (await fetch(url, {
-        method: 'POST',
-        signal:Timeout(1).signal,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
-        },
-        body: JSON.stringify(payload)
-      })).json();
-
-
-      if (result.error) {
-        console.log(
-            "Error occured. Try again!"
-        )
-      }
-      else {
-        var reply = result['choices'][0]['text'];
-        console.log(reply);
-        res.json(reply)
-        stat = 1
-     }
-    }
-    catch(error) {
-console.log('error');
-    }
-
-
-    } catch (error) {
-      // TypeError: Failed to fetch
-      res.json('Polymath Server Offline')
-      console.log('There was an error', error);
-    }
-
-  
-
-    
-       
-    
-    }
-  }
-  });
